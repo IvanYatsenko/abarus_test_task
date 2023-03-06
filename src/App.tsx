@@ -1,23 +1,10 @@
 import axios from 'axios'
 import React, { useEffect, useMemo, useState } from 'react'
-import SearchIcon from '@mui/icons-material/Search'
 import { IPost, SortDirection } from './types/types'
-import {
-  Box,
-  InputAdornment,
-  Pagination,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField
-} from '@mui/material'
-import { BrowserRouter } from 'react-router-dom'
-
-const POSTS_PER_PAGE = 10
+import { Pagination } from '@mui/material'
+import { POSTS_PER_PAGE, URL_FETCH_STR } from './constants/constans'
+import { SearchInput } from './components/SearchInput'
+import { TablePosts } from './components/TablePosts'
 
 function App() {
   const query = new URLSearchParams(window.location.search)
@@ -36,10 +23,9 @@ function App() {
     fetchPosts()
   }, [])
 
-  async function fetchPosts() {
+  const fetchPosts = async () => {
     try {
-      const response = await axios.get<IPost[]>(`https://jsonplaceholder.typicode.com/posts`)
-      console.log(response.data)
+      const response = await axios.get<IPost[]>(URL_FETCH_STR)
       setPosts(response.data)
       setPostsFilterArr(response.data)
       setPageCount(Math.ceil(response.data.length / 10))
@@ -48,7 +34,7 @@ function App() {
     }
   }
 
-  const changeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const changeInputSearchHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = event.target.value.trim()
     const postFiltred = posts.filter(post => post.title.includes(value) || post.body.includes(value) || post.id.toString().includes(value))
     setPostsFilterArr(postFiltred)
@@ -80,7 +66,7 @@ function App() {
     return postsFilterArr.slice(startIndex, endIndex)
   }, [currentNumberPage, postsFilterArr])
 
-  const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const paginationHandler = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentNumberPage(value - 1)
     query.set('pageNumber', `${value}`)
     window.history.pushState(null, '', '?' + query.toString())
@@ -88,56 +74,9 @@ function App() {
 
   return (
     <div className='main-container'>
-
-
-      <Box sx={{ p: '0', display: 'flex', alignItems: 'center', width: 631, background: '#5A5C66', color: '#fff', marginBottom: '15px' }}>
-        <TextField
-          sx={{ flex: 1, color: '#fff' }}
-          placeholder='Поиск'
-          id="search"
-          type="text"
-          fullWidth
-          InputProps={{ endAdornment: <InputAdornment position='end'><SearchIcon sx={{ color: '#fff' }} /></InputAdornment> }}
-          onChange={(event) => changeHandler(event)}
-        />
-      </Box>
-
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead sx={{ background: '#474955' }}>
-            <TableRow>
-              <TableCell sx={{ color: '#fff', cursor: 'pointer' }} onClick={() => sortHandler('id')}>ID</TableCell>
-              <TableCell sx={{ color: '#fff', paddingLeft: 16, cursor: 'pointer' }} onClick={() => sortHandler('title')}>Заголовок</TableCell>
-              <TableCell sx={{ color: '#fff', paddingLeft: 16, cursor: 'pointer' }} onClick={() => sortHandler('body')}>Описание</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {
-
-
-              displayPosts.map((post) => (
-                <TableRow
-                  key={post.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell>{post.id}</TableCell>
-                  <TableCell>{post.title}</TableCell>
-                  <TableCell>{post.body}</TableCell>
-                </TableRow>
-              ))
-
-
-              
-            }
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-
-      <Pagination count={pagesCount} page={currentNumberPage + 1} onChange={handleChange} />
-
-
+      <SearchInput onChange={(event) => changeInputSearchHandler(event)} />
+      <TablePosts onClick={sortHandler} posts={displayPosts} />
+      <Pagination sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '24px 0'}} count={pagesCount} page={currentNumberPage + 1} onChange={paginationHandler} />
     </div>
   )
 }
