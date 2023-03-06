@@ -1,5 +1,6 @@
 {
   "name": "abaru_test_task",
+  "homepage": "http://nabee.tmweb.ru/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

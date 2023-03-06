@@ -6,3 +6,4 @@ export interface IPost {
 }
 
 export type SortDirection = 'asc' | 'desc'
+
